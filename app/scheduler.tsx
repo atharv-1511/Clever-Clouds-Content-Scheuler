@@ -684,10 +684,9 @@ export default function Scheduler() {
                 <p>
                   Calendar dates use Asia/Kolkata (IST). Drafts, planned dates,
                   and attachments are saved on the server. Automatic background
-                  publishing is not active. Text-only posts can be sent manually
-                  to connected Facebook Pages, LinkedIn profiles, and X
-                  accounts. Instagram and YouTube publishing, media publishing,
-                  and automated delivery are still to be implemented.
+                  publishing requires an external cron trigger (e.g. cron-job.org)
+                  configured to hit /api/cron/publish. Posts with images and video 
+                  are supported for Facebook, LinkedIn, X, and YouTube.
                 </p>
               </section>
               <section className="settings-box">
@@ -770,22 +769,22 @@ export default function Scheduler() {
           <DialogDescription>
             Send this saved text post now to one connected account.
           </DialogDescription>
-          <div className="notice">
-            Text-only publishing supports Facebook Pages, LinkedIn personal
-            profiles, and X. Other platforms and media posts can be planned and
-            saved, but not published here yet.
+          <div className="notice" style={{ marginBottom: 15 }}>
+            Publishing supports text, images, and video for Facebook, LinkedIn, X, and YouTube.
+            Automated scheduling requires configuring a cron service to trigger /api/cron/publish.
           </div>
-          {publish?.media_id ? (
-            <a
-              className="secondary-button"
-              href={'/api/media?id=' + publish.media_id}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Download / open attachment
-            </a>
-          ) : (
-            <>
+          {publish?.media_id && (
+            <div style={{ marginBottom: 15 }}>
+              <a
+                className="secondary-button"
+                href={'/api/media?id=' + publish.media_id}
+                target="_blank"
+                rel="noreferrer"
+              >
+                View attached media
+              </a>
+            </div>
+          )}
               <Select value={target} onValueChange={(v) => setTarget(v || '')}>
                 <SelectTrigger
                   className="w-full h-10"
@@ -798,7 +797,7 @@ export default function Scheduler() {
                     .filter(
                       (a) =>
                         publish?.platforms.includes(a.platform) &&
-                        ['Facebook', 'LinkedIn', 'X'].includes(a.platform),
+                        ['Facebook', 'LinkedIn', 'X', 'YouTube'].includes(a.platform),
                     )
                     .map((a) => (
                       <SelectItem key={a.id} value={a.id}>
@@ -845,8 +844,6 @@ export default function Scheduler() {
               >
                 {busy ? 'Publishing…' : 'Publish now'}
               </button>
-            </>
-          )}
           {error && (
             <div className="notice error" role="alert">
               {error}
