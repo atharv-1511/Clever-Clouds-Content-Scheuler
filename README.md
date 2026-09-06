@@ -1,8 +1,6 @@
 # Clever Clouds Content Scheduler
 
-This deployment target is Vercel + Supabase. Cloudflare D1/R2 are no longer used by the application runtime.
-
-Internal social content workspace with Clever Clouds branding. Built with React, Vinext (Next.js App Router compatible), Cloudflare Workers, D1, and R2. This is the first implementation, not a complete automated publishing service.
+Internal social content workspace with Clever Clouds branding. Built with Next.js and React on Vercel, Supabase PostgreSQL for application data, and private Supabase Storage for attachments. This is the first implementation, not a complete automated publishing service.
 
 ## Implemented
 
@@ -21,15 +19,22 @@ Internal social content workspace with Clever Clouds branding. Built with React,
 - Meta discovery retrieves up to 100 pages. Google discovery retrieves up to 20 business accounts and 100 locations per account. Larger organizations need discovery pagination.
 - Ambiguous publishing failures remain blocked for retry to prevent duplicates; check the social account manually.
 - Optional WebMCP tools are feature-detected; a supported browser contract validation was not available during development.
-- Hosted data uses D1/R2. The supplied Supabase database has not been accessed or migrated.
+- The supplied Supabase database has not been accessed or migrated. The current version still needs a successful dependency install, type check, and production build.
+- The current server-mediated 20 MB attachment upload needs direct signed Storage uploads before production use on Vercel.
 
 ## Development
 
-Use Node 22.13+ and pnpm. Run `pnpm install`, `pnpm dev`, and `pnpm build`. Run the SQL in `supabase/schema.sql` once in Supabase SQL Editor. Required native dependency scripts must be approved through the package manager.
+Use Node 22.13+ and pnpm. Run `pnpm install`, `pnpm typecheck`, and `pnpm build`. Start development with `pnpm dev`. Commit the regenerated lockfile after installing; the old dependency lockfile was removed because it described the retired runtime. Required native dependency scripts must be approved through the package manager.
 
-Copy `.env.example` to ignored `.dev.vars` and configure the origin, password hash/salt, and a random 32-byte base64 encryption key. Password hashing uses PBKDF2 SHA-256, 100,000 iterations, 32-byte output, lowercase hex, and the UTF-8 salt. Do not put the password, app secrets, or database credentials into source control. Do not rotate the encryption key without migrating encrypted rows.
+Copy `.env.example` to ignored `.env.local` and configure the origin, password hash/salt, and a random 32-byte base64 encryption key. Preserve these values if you already have a local environment file. Password hashing uses PBKDF2 SHA-256, 100,000 iterations, 32-byte output, lowercase hex, and the UTF-8 salt. Do not put the password, app secrets, or database credentials into source control. Do not rotate the encryption key without migrating encrypted rows.
 
-The Supabase schema lives in `supabase/schema.sql`. Hosted environment secrets are managed in Vercel, outside the source repository. The Supabase service-role key is server-only and must never be exposed as `NEXT_PUBLIC_*`.
+The Supabase schema lives in `supabase/schema.sql`. Review the target database for conflicting tables, then run `pnpm db:migrate` or execute that SQL in the Supabase SQL Editor. The migration creates application tables with row-level security and a private `clever-clouds-media` bucket. Application access uses the server database connection; no browser database policies are required. Sign-in uses the application's password/session implementation, not Supabase Auth.
+
+Set `DATABASE_URL` to the Supabase transaction pooler URL from the project's Connect panel for Vercel. Encode special characters in the database password. Set `NEXT_PUBLIC_SUPABASE_URL` to the project URL and `SUPABASE_SECRET_KEY` to a server API key. A legacy `SUPABASE_SERVICE_ROLE_KEY` is also accepted. Neither secret key may be exposed as `NEXT_PUBLIC_*`. The migration uses the default bucket; if you change `SUPABASE_STORAGE_BUCKET`, create that private bucket separately.
+
+## Vercel deployment
+
+Import the GitHub repository with the Next.js preset and the directory containing `package.json` as the root. `vercel.json` defines the build settings. Add all variables from `.env.example` to Vercel, using the final HTTPS domain as `APP_ORIGIN`, then deploy. Update platform OAuth callbacks to that origin. Validate sign-in, saved posts, and media access before production use. See `DEPLOYMENT-STATUS.md` for remaining limitations.
 
 ## Connecting platforms
 

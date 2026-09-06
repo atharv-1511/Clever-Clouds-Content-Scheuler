@@ -22,7 +22,11 @@ export async function POST(request: Request) {
   try {
     sameOrigin(request);
     const b = await body(request);
-    const ip = await digest(request.headers.get('cf-connecting-ip') || 'local');
+    const ip = await digest(
+      process.env.VERCEL === '1'
+        ? request.headers.get('x-vercel-forwarded-for')?.split(',')[0].trim() || 'unknown'
+        : 'local',
+    );
     const now = Date.now();
     const a = await db()
       .prepare(
