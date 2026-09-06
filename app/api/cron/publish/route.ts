@@ -40,7 +40,7 @@ export async function GET(request: Request) {
           // Check if this delivery already exists to avoid duplicate sends
           // publishPost does this internally, but it's good to be aware.
           const res = await publishPost(post.id, account.id, version);
-          version = res.newVersion ?? version + 1;
+          version = version + 1;
           postResults.push({ account: account.name, platform: account.platform, success: true, externalId: res.externalId });
         } catch (err: any) {
           // If a post fails to publish for one account, we log it but continue to other accounts
