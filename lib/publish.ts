@@ -31,10 +31,18 @@ export async function publishPost(postId: string, accountId: string, version: nu
     let mediaType = '';
     
     if (p.media_id) {
+      // Fetch the media type from the DB first (Blob.type from Supabase can be empty)
+      const mediaRecord = await db()
+        .prepare('SELECT type FROM media WHERE id=?')
+        .bind(p.media_id)
+        .first<{ type: string }>();
+      if (mediaRecord) mediaType = mediaRecord.type;
+      
       const downloaded = await supabaseAdmin().storage.from(bucket()).download(p.media_id);
       if (downloaded.error || !downloaded.data) throw new AppError('Media file not found in storage.');
       mediaBlob = downloaded.data;
-      mediaType = mediaBlob.type || 'application/octet-stream';
+      // Fall back to blob type if DB record is missing
+      if (!mediaType) mediaType = mediaBlob.type || 'application/octet-stream';
     }
 
     const caption = JSON.parse(p.variants)[a.platform] || p.content;

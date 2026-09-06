@@ -40,7 +40,7 @@ export async function GET(request: Request) {
           // Check if this delivery already exists to avoid duplicate sends
           // publishPost does this internally, but it's good to be aware.
           const res = await publishPost(post.id, account.id, version);
-          version++;
+          version = res.newVersion ?? version + 1;
           postResults.push({ account: account.name, platform: account.platform, success: true, externalId: res.externalId });
         } catch (err: any) {
           // If a post fails to publish for one account, we log it but continue to other accounts
@@ -52,6 +52,13 @@ export async function GET(request: Request) {
           if (updatedPost) version = updatedPost.version;
         }
       }
+
+      // Mark post as 'published' when all accounts succeeded so the cron won't re-attempt it
+      const allSucceeded = postResults.every(r => r.success);
+      await db()
+        .prepare("UPDATE posts SET status=?, version=version+1, updated=? WHERE id=?")
+        .bind(allSucceeded ? 'published' : 'partial', new Date().toISOString(), post.id)
+        .run();
 
       results.push({ postId: post.id, title: post.title, deliveries: postResults });
     }
