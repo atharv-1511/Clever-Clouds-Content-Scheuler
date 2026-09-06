@@ -3,11 +3,5 @@
   "framework": "nextjs",
   "buildCommand": "next build",
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "regions": ["bom1"],
-  "crons": [
-    {
-      "path": "/api/cron/publish",
-      "schedule": "*/15 * * * *"
-    }
-  ]
+  "regions": ["bom1"]
 }
