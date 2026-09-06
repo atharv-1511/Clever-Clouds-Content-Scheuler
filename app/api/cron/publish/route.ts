@@ -54,11 +54,17 @@ export async function GET(request: Request) {
       }
 
       // Mark post as 'published' when all accounts succeeded so the cron won't re-attempt it
-      const allSucceeded = postResults.every(r => r.success);
-      await db()
-        .prepare("UPDATE posts SET status=?, version=version+1, updated=? WHERE id=?")
-        .bind(allSucceeded ? 'published' : 'partial', new Date().toISOString(), post.id)
-        .run();
+      // Only if at least one delivery was attempted
+      if (postResults.length > 0) {
+        const allSucceeded = postResults.every(r => r.success);
+        await db()
+          .prepare("UPDATE posts SET status=?, version=version+1, updated=? WHERE id=?")
+          .bind(allSucceeded ? 'published' : 'partial', new Date().toISOString(), post.id)
+          .run();
+      } else {
+        // No matching connected accounts — skip silently, do not mark as published
+        postResults.push({ platform: 'none', success: false, error: 'No connected accounts found for this platform.' });
+      }
 
       results.push({ postId: post.id, title: post.title, deliveries: postResults });
     }
