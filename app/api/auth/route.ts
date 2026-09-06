@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const now = Date.now();
     const a = await db()
       .prepare(
-        'INSERT INTO attempts(id,count,expires) VALUES(?,1,?) ON CONFLICT(id) DO UPDATE SET count=CASE WHEN expires<? THEN 1 ELSE count+1 END,expires=CASE WHEN expires<? THEN ? ELSE expires END RETURNING count',
+        'INSERT INTO attempts(id,count,expires) VALUES(?,1,?) ON CONFLICT(id) DO UPDATE SET count=CASE WHEN attempts.expires<? THEN 1 ELSE attempts.count+1 END,expires=CASE WHEN attempts.expires<? THEN ? ELSE attempts.expires END RETURNING count',
       )
       .bind(ip, now + 900000, now, now, now + 900000)
       .first<{ count: number }>();

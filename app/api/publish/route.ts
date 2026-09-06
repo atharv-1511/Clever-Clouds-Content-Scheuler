@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     delivery = p.id + '|' + a.id;
     const inserted = await db()
       .prepare(
-        "INSERT OR IGNORE INTO deliveries(id,post_id,account_id,status,updated) VALUES(?,?,?,'sending',?)",
+        "INSERT INTO deliveries(id,post_id,account_id,status,updated) VALUES(?,?,?,'sending',?) ON CONFLICT(id) DO NOTHING",
       )
       .bind(delivery, p.id, a.id, new Date().toISOString())
       .run();

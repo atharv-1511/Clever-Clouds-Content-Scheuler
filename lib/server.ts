@@ -1,17 +1,49 @@
 import { cookies } from 'next/headers';
 import postgres from 'postgres';
 export const runtime = () => process.env;
-const sql = postgres(process.env.DATABASE_URL || '', { max: 5, prepare: false, idle_timeout: 20 });
-const convert = (query: string) => query.replace(/\?/g, (_, offset, source) => `$${source.slice(0, offset).match(/\?/g)?.length || 1}`);
-export const db = () => ({
-  prepare(query: string) {
-    const text = query.replace(/\?/g, (_, offset: number, source: string) => `$${(source.slice(0, offset).match(/\?/g) || []).length + 1}`);
-    return { bind(...values: unknown[]) { return {
-      async first<T = any>() { const rows = await sql.unsafe(text, values as any); return (rows[0] as T) || null; },
-      async all<T = any>() { const rows = await sql.unsafe(text, values as any); return { results: rows as unknown as T[] }; },
-      async run() { const rows = await sql.unsafe(text, values as any); return { meta: { changes: rows.count ?? rows.length } }; },
-    }; },
+let connection: ReturnType<typeof postgres> | undefined;
+function database() {
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new AppError('Database has not been configured.', 503);
+  return connection ??= postgres(url, {
+    max: 5, prepare: false, idle_timeout: 20, connect_timeout: 10,
+    ssl: 'verify-full',
+  });
+}
+function statement(query: string, values: unknown[] = []) {
+  let index = 0;
+  // Application queries are static; skip quoted SQL strings and identifiers.
+  const sqlText = query.replace(/'(?:''|[^'])*'|"(?:""|[^"])*"|\?/g,
+    (token) => token === '?' ? `$${++index}` : token);
+  const execute = () => database().unsafe(sqlText, values as never[]);
+  return {
+    sqlText, values,
+    bind(...parameters: unknown[]) { return statement(query, parameters); },
+    async first<T = Record<string, unknown>>() {
+      const rows = await execute();
+      return (rows[0] as T | undefined) ?? null;
+    },
+    async all<T = Record<string, unknown>>() {
+      return { results: await execute() as unknown as T[] };
+    },
+    async run() {
+      const rows = await execute();
+      return { meta: { changes: rows.count } };
+    },
   };
+}
+export const db = () => ({
+  prepare: statement,
+  async batch(statements: ReturnType<typeof statement>[]) {
+    return database().begin(async (transaction) => {
+      const results = [];
+      for (const item of statements) {
+        const rows = await transaction.unsafe(item.sqlText, item.values as never[]);
+        results.push({ meta: { changes: rows.count } });
+      }
+      return results;
+    });
+  },
 });
 export const EMAIL = 'ads.cleverclouds.in@gmail.com';
 const encoder = new TextEncoder();

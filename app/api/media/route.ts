@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     )
       throw new AppError('Use a JPG, PNG, WebP, or MP4 file under 20 MB.');
     const id = crypto.randomUUID();
-    const uploaded=await supabaseAdmin.storage.from(bucket()).upload(id,Buffer.from(await file.arrayBuffer()),{contentType:file.type,upsert:false});
+    const uploaded=await supabaseAdmin().storage.from(bucket()).upload(id,Buffer.from(await file.arrayBuffer()),{contentType:file.type,upsert:false});
     if(uploaded.error) throw new AppError('The file could not be uploaded.');
     try {
       await db()
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
         .bind(id, file.name.slice(0, 200), file.type, file.size)
         .run();
     } catch (e) {
-      await supabaseAdmin.storage.from(bucket()).remove([id]);
+      await supabaseAdmin().storage.from(bucket()).remove([id]);
       throw e;
     }
     return json({ id, name: file.name, type: file.type });
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
     const id = new URL(request.url).searchParams.get('id');
     if (!id || !/^[-a-f0-9]{36}$/.test(id))
       throw new AppError('File not found.', 404);
-    const downloaded=await supabaseAdmin.storage.from(bucket()).download(id);
+    const downloaded=await supabaseAdmin().storage.from(bucket()).download(id);
     if(downloaded.error||!downloaded.data) throw new AppError('File not found.',404);
     return new Response(downloaded.data.stream(), {
       headers: {
