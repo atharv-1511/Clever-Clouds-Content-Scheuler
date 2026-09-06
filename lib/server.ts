@@ -7,7 +7,7 @@ function database() {
   if (!url) throw new AppError('Database has not been configured.', 503);
   return connection ??= postgres(url, {
     max: 5, prepare: false, idle_timeout: 20, connect_timeout: 10,
-    ssl: 'verify-full',
+    ssl: 'require',
   });
 }
 function statement(query: string, values: unknown[] = []) {
