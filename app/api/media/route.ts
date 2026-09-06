@@ -3,10 +3,11 @@ import {
   db,
   fail,
   json,
-  runtime,
   sameOrigin,
   AppError,
 } from '@/lib/server';
+import { supabaseAdmin } from '@/lib/supabase';
+const bucket=()=>process.env.SUPABASE_STORAGE_BUCKET||'clever-clouds-media';
 export async function POST(request: Request) {
   try {
     sameOrigin(request);
@@ -26,16 +27,15 @@ export async function POST(request: Request) {
     )
       throw new AppError('Use a JPG, PNG, WebP, or MP4 file under 20 MB.');
     const id = crypto.randomUUID();
-    await runtime().MEDIA.put(id, file.stream(), {
-      httpMetadata: { contentType: file.type },
-    });
+    const uploaded=await supabaseAdmin.storage.from(bucket()).upload(id,Buffer.from(await file.arrayBuffer()),{contentType:file.type,upsert:false});
+    if(uploaded.error) throw new AppError('The file could not be uploaded.');
     try {
       await db()
         .prepare('INSERT INTO media(id,name,type,size) VALUES(?,?,?,?)')
         .bind(id, file.name.slice(0, 200), file.type, file.size)
         .run();
     } catch (e) {
-      await runtime().MEDIA.delete(id);
+      await supabaseAdmin.storage.from(bucket()).remove([id]);
       throw e;
     }
     return json({ id, name: file.name, type: file.type });
@@ -49,12 +49,12 @@ export async function GET(request: Request) {
     const id = new URL(request.url).searchParams.get('id');
     if (!id || !/^[-a-f0-9]{36}$/.test(id))
       throw new AppError('File not found.', 404);
-    const file = await runtime().MEDIA.get(id);
-    if (!file) throw new AppError('File not found.', 404);
-    return new Response(file.body, {
+    const downloaded=await supabaseAdmin.storage.from(bucket()).download(id);
+    if(downloaded.error||!downloaded.data) throw new AppError('File not found.',404);
+    return new Response(downloaded.data.stream(), {
       headers: {
         'Content-Type':
-          file.httpMetadata?.contentType || 'application/octet-stream',
+          downloaded.data.type || 'application/octet-stream',
         'Cache-Control': 'private, no-store',
         'X-Content-Type-Options': 'nosniff',
       },

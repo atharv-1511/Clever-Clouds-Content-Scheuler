@@ -1,15 +1,18 @@
-import { env } from 'cloudflare:workers';
 import { cookies } from 'next/headers';
-export type Runtime = {
-  DB: D1Database;
-  MEDIA: R2Bucket;
-  APP_PASSWORD_HASH: string;
-  APP_PASSWORD_SALT: string;
-  APP_ENCRYPTION_KEY: string;
-  APP_ORIGIN: string;
-};
-export const runtime = () => env as unknown as Runtime;
-export const db = () => runtime().DB;
+import postgres from 'postgres';
+export const runtime = () => process.env;
+const sql = postgres(process.env.DATABASE_URL || '', { max: 5, prepare: false, idle_timeout: 20 });
+const convert = (query: string) => query.replace(/\?/g, (_, offset, source) => `$${source.slice(0, offset).match(/\?/g)?.length || 1}`);
+export const db = () => ({
+  prepare(query: string) {
+    const text = query.replace(/\?/g, (_, offset: number, source: string) => `$${(source.slice(0, offset).match(/\?/g) || []).length + 1}`);
+    return { bind(...values: unknown[]) { return {
+      async first<T = any>() { const rows = await sql.unsafe(text, values as any); return (rows[0] as T) || null; },
+      async all<T = any>() { const rows = await sql.unsafe(text, values as any); return { results: rows as unknown as T[] }; },
+      async run() { const rows = await sql.unsafe(text, values as any); return { meta: { changes: rows.count ?? rows.length } }; },
+    }; },
+  };
+});
 export const EMAIL = 'ads.cleverclouds.in@gmail.com';
 const encoder = new TextEncoder();
 export class AppError extends Error {
@@ -109,7 +112,7 @@ async function encryptionKey() {
     throw new AppError('Credential storage has not been configured.', 503);
   return crypto.subtle.importKey(
     'raw',
-    Uint8Array.from(atob(raw), (c) => c.charCodeAt(0)),
+    Uint8Array.from(Buffer.from(raw, 'base64')),
     { name: 'AES-GCM' },
     false,
     ['encrypt', 'decrypt'],

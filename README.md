@@ -1,5 +1,7 @@
 # Clever Clouds Content Scheduler
 
+This deployment target is Vercel + Supabase. Cloudflare D1/R2 are no longer used by the application runtime.
+
 Internal social content workspace with Clever Clouds branding. Built with React, Vinext (Next.js App Router compatible), Cloudflare Workers, D1, and R2. This is the first implementation, not a complete automated publishing service.
 
 ## Implemented
@@ -23,11 +25,11 @@ Internal social content workspace with Clever Clouds branding. Built with React,
 
 ## Development
 
-Use Node 22.13+ and pnpm. Run `pnpm install`, `pnpm db:generate` after schema changes, and `pnpm dev`. Run `pnpm exec tsc --noEmit` and `pnpm build` for validation. Required native dependency scripts must be approved through the package manager.
+Use Node 22.13+ and pnpm. Run `pnpm install`, `pnpm dev`, and `pnpm build`. Run the SQL in `supabase/schema.sql` once in Supabase SQL Editor. Required native dependency scripts must be approved through the package manager.
 
 Copy `.env.example` to ignored `.dev.vars` and configure the origin, password hash/salt, and a random 32-byte base64 encryption key. Password hashing uses PBKDF2 SHA-256, 100,000 iterations, 32-byte output, lowercase hex, and the UTF-8 salt. Do not put the password, app secrets, or database credentials into source control. Do not rotate the encryption key without migrating encrypted rows.
 
-Schema migrations live in `drizzle/` and are applied before hosted deployment. Local development needs the same migration applied to the local D1 database. Logical bindings are DB and MEDIA. Hosted environment secrets are managed outside the source repository.
+The Supabase schema lives in `supabase/schema.sql`. Hosted environment secrets are managed in Vercel, outside the source repository. The Supabase service-role key is server-only and must never be exposed as `NEXT_PUBLIC_*`.
 
 ## Connecting platforms
 

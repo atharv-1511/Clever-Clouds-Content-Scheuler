@@ -6,14 +6,17 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "vinext dev",
-    "build": "vinext build",
-    "start": "wrangler dev --config dist/server/wrangler.json",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "lint": "oxlint",
     "format": "oxfmt",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
+    "next": "15.5.7",
+    "postgres": "3.4.7",
+    "@supabase/supabase-js": "2.57.4",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "react-server-dom-webpack": "19.2.6",

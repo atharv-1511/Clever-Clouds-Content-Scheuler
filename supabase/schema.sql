@@ -1,0 +1,11 @@
+create table if not exists sessions (id text primary key, expires bigint not null);
+create table if not exists attempts (id text primary key, count integer not null, expires bigint not null);
+create table if not exists integrations (id text primary key, secret text not null, updated text not null);
+create table if not exists oauth_states (id text primary key, provider text not null, session text not null, verifier text not null, expires bigint not null);
+create table if not exists accounts (id text primary key, provider text not null, platform text not null, name text not null, external_id text not null, token text not null, updated text not null);
+create table if not exists media (id text primary key, name text not null, type text not null, size bigint not null);
+create table if not exists posts (id text primary key, title text not null, content text not null, platforms text not null, variants text not null, scheduled_at text, status text not null, media_id text, created text not null, updated text not null, version integer not null default 1);
+create index if not exists idx_posts_date on posts(scheduled_at);
+create table if not exists deliveries (id text primary key, post_id text not null, account_id text not null, status text not null, external_id text, error text, updated text not null);
+alter table sessions enable row level security; alter table attempts enable row level security; alter table integrations enable row level security; alter table oauth_states enable row level security; alter table accounts enable row level security; alter table media enable row level security; alter table posts enable row level security; alter table deliveries enable row level security;
+insert into storage.buckets(id,name,public) values ('clever-clouds-media','clever-clouds-media',false) on conflict (id) do nothing;
