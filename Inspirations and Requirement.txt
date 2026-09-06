@@ -1,0 +1,23 @@
+I need to create a social media content scheduler for my Performance Marketing Agency. The theme should match my main Website: https://www.cleverclouds.in/
+
+This will be my Internal Company tool. So, the sign-in will be from only one email ID.
+Email: ads.cleverclouds.in@gmail.com
+Pass: CLEVERCLOUDS.IN2026!
+
+The Features should include: 
+1. Adding Social Media Platforms
+2. Built-in Calendar
+3. GBP Reviews
+4. Reviewing and Responding to DMs and Reviews
+5. Publishing and Creating Social Media-Specific Posts
+6. Social Media Platforms: Instagram, Facebook, YouTube, LinkedIn, Twitter (X).
+
+I have attached a GitHub repo: https://github.com/gitroomhq/postiz-app for reference; it has similar features and logic built for a social media content scheduler.
+
+The Tech Stack to be used is NextJs, etc
+
+The GitHub Repo that to push code to: https://github.com/atharv-1511/Clever-Clouds-Content-Scheuler.git
+
+If you need any database to be used, here's the Supabase Cred:
+
+postgresql://postgres:Rainwalk@19.ar@db.gtvuxlnrnnkanqkjinhw.supabase.co:5432/postgres
