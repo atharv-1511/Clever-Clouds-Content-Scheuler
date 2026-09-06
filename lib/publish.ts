@@ -249,14 +249,14 @@ export async function publishPost(postId: string, accountId: string, version: nu
     ]);
 
     return { ok: true, externalId: external };
-  } catch (e) {
+  } catch (e: any) {
     if (delivery)
       await db()
         .prepare(
           "UPDATE deliveries SET status='check_required',error=?,updated=? WHERE id=?",
         )
         .bind(
-          'Delivery was not confirmed. Check the social account before retrying.',
+          e.message || 'Delivery was not confirmed. Check the social account before retrying.',
           new Date().toISOString(),
           delivery,
         )
