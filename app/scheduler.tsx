@@ -54,14 +54,16 @@ import Login from './login';
 import Editor from './editor';
 import Integrations, { type Connections } from './integrations';
 import Inbox from './inbox';
+import Clients from './clients';
 import { request, istInput, displayDate } from '@/lib/client';
 import { platforms, type Post } from '@/lib/catalog';
 const nav = [
+  ['Clients', Users],
   ['Calendar', CalendarDays],
   ['Posts & drafts', FileText],
   ['Social accounts', Layers],
-  ['Inbox & reviews', MessageSquare],
-  ['Settings', Settings],
+  ['Inbox & review', MessageSquare],
+  ['Media library', Layers],
 ] as const;
 const statItems = [
   ['Planned', Clock3],
@@ -71,7 +73,7 @@ const statItems = [
 ] as const;
 export default function Scheduler() {
   const [auth, setAuth] = useState<boolean | null>(null);
-  const [view, setView] = useState('Calendar');
+  const [view, setView] = useState('Clients');
   const [month, setMonth] = useState(() => {
     const d = istInput(new Date());
     return new Date(Number(d.slice(0, 4)), Number(d.slice(5, 7)) - 1, 1);
@@ -248,10 +250,8 @@ export default function Scheduler() {
               height={43}
               alt="Clever Clouds"
             />
-            <span>
-              clever
-              <br />
-              clouds.
+            <span style={{ whiteSpace: 'nowrap' }}>
+              clever clouds.
             </span>
           </div>
         </SidebarHeader>
@@ -335,26 +335,28 @@ export default function Scheduler() {
           </div>
         </header>
         <div className="main-content">
-          <div className="page-heading">
-            <div>
-              <div className="eyebrow">PLAN. CREATE. CONNECT.</div>
-              <h1>{view === 'Calendar' ? 'Content calendar' : view}</h1>
-              <p>
-                {view === 'Calendar'
-                  ? 'A clear view of what’s next for your brand.'
-                  : view === 'Social accounts'
-                    ? 'Your channels. Your connections. All in one place.'
-                    : view === 'Posts & drafts'
-                      ? 'From the first idea to the final caption.'
-                      : view === 'Inbox & reviews'
-                        ? 'Stay close to your audience.'
-                        : 'Your workspace, configured for you.'}
-              </p>
+          {view !== 'Clients' && (
+            <div className="page-heading">
+              <div>
+                <div className="eyebrow">PLAN. CREATE. CONNECT.</div>
+                <h1>{view === 'Calendar' ? 'Content calendar' : view}</h1>
+                <p>
+                  {view === 'Calendar'
+                    ? 'A clear view of what’s next for your brand.'
+                    : view === 'Social accounts'
+                      ? 'Your channels. Your connections. All in one place.'
+                      : view === 'Posts & drafts'
+                        ? 'From the first idea to the final caption.'
+                        : view === 'Inbox & review'
+                          ? 'Stay close to your audience.'
+                          : 'Your workspace, configured for you.'}
+                </p>
+              </div>
+              <button className="primary-button" onClick={() => setEditor({})}>
+                <Plus /> Create post
+              </button>
             </div>
-            <button className="primary-button" onClick={() => setEditor({})}>
-              <Plus /> Create post
-            </button>
-          </div>
+          )}
           {error && (
             <div className="notice error" role="alert">
               {error}{' '}
@@ -599,18 +601,18 @@ export default function Scheduler() {
                     All posts
                   </TabsTrigger>
                   <TabsTrigger className="px-4" value="draft">
-                    Drafts
+                    In Draft
                   </TabsTrigger>
                   <TabsTrigger className="px-4" value="planned">
-                    Planned
+                    Scheduled
                   </TabsTrigger>
                   <TabsTrigger className="px-4" value="partial">
-                    Delivery history
+                    Published
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
               {posts
-                .filter((p) => postFilter === 'all' || p.status === postFilter)
+                .filter((p) => postFilter === 'all' || p.status === postFilter || (postFilter === 'partial' && p.status === 'published'))
                 .map((p) => (
                   <article className="draft-row" key={p.id}>
                     <div>
@@ -672,54 +674,19 @@ export default function Scheduler() {
               )}
             </>
           )}
+          {view === 'Clients' && (
+            <Clients connections={connections} refreshConnections={refresh} />
+          )}
           {view === 'Social accounts' && (
             <Integrations data={connections} refresh={refresh} />
           )}
-          {view === 'Inbox & reviews' && (
+          {view === 'Inbox & review' && (
             <Inbox
               accounts={connections.accounts}
               setup={() => setView('Social accounts')}
             />
           )}
-          {view === 'Settings' && (
-            <>
-              <section className="settings-box">
-                <h3>Workspace access</h3>
-                <p>
-                  Sign-in is restricted to{' '}
-                  <strong>ads.cleverclouds.in@gmail.com</strong>. Sessions
-                  expire after 12 hours. This hosted workspace also has private
-                  owner access.
-                </p>
-              </section>
-              <section className="settings-box">
-                <h3>Content & publishing</h3>
-                <p>
-                  Calendar dates use Asia/Kolkata (IST). Drafts, planned dates,
-                  and attachments are saved on the server. Automatic background
-                  publishing requires an external cron trigger (e.g. cron-job.org)
-                  configured to hit /api/cron/publish. Posts with images and video 
-                  are supported for Facebook, LinkedIn, X, and YouTube.
-                </p>
-              </section>
-              <section className="settings-box">
-                <h3>Integrations</h3>
-                <p>
-                  Add and rotate platform client IDs and secrets from Social
-                  accounts. Secrets and access tokens are encrypted before
-                  storage. Actual API access depends on the platform’s approval
-                  and permissions.
-                </p>
-                <button
-                  style={{ marginTop: 15 }}
-                  className="secondary-button"
-                  onClick={() => setView('Social accounts')}
-                >
-                  Manage credentials
-                </button>
-              </section>
-            </>
-          )}
+
         </div>
       </main>
       {editor && (

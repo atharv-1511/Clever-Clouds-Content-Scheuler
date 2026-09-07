@@ -861,6 +861,8 @@ h3 {
 [data-theme="dark"] .onboarding { background: #111d38; border-color: #1e3060; }
 [data-theme="dark"] .platform-symbol { background: #192040; color: #6fa0ff; }
 [data-theme="dark"] .stat-icon { background: #1a2a60; color: #6fa0ff; }
+[data-theme="dark"] .brand { color: #6fa0ff; }
+[data-theme="dark"] .nav-label { color: #5a6b8c; }
 [data-theme="dark"] .muted, [data-theme="dark"] .stat-top,
 [data-theme="dark"] .draft-row p, [data-theme="dark"] .account-card p,
 [data-theme="dark"] .settings-box p { color: var(--muted-text); }

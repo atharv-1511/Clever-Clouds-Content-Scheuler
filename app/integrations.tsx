@@ -21,7 +21,7 @@ import {
 import { Link2, KeyRound, ArrowUpRight, Plus, Trash2, Copy, Check } from 'lucide-react';
 
 export type Connections = {
-  configured: { id: string; label: string; provider: string; clientIdHint: string; updated: string }[];
+  configured: { id: string; label: string; provider: string; client_id?: string; clientIdHint: string; updated: string }[];
   accounts: {
     id: string;
     integration_id: string;
@@ -89,9 +89,11 @@ type EditState = { integrationId?: string; provider: string } | null;
 export default function Integrations({
   data,
   refresh,
+  clientId,
 }: {
   data: Connections;
   refresh: () => Promise<void>;
+  clientId?: string;
 }) {
   const [editing, setEditing] = useState<EditState>(null);
   const [removing, setRemoving] = useState<string | null>(null); // integrationId
@@ -116,18 +118,18 @@ export default function Integrations({
 
   return (
     <>
-      <div className="notice">
-        Each client gets their own set of app credentials (Option A). Click{' '}
-        <strong>Add integration</strong> on any platform to set up a new client.
-        Saving credentials and connecting an account are separate steps.
-      </div>
       {error && <div role="alert" className="notice error">{error}</div>}
       {notice && <div role="status" className="notice">{notice}</div>}
 
       <div className="cards">
         {providers.map((p) => {
-          const integrations = data.configured.filter((c) => c.provider === p.id || c.id === p.id);
-          const accounts = data.accounts.filter((a) => a.provider === p.id);
+          // Filter integrations by provider and clientId (if provided)
+          const integrations = data.configured.filter((c) => 
+            (c.provider === p.id || c.id === p.id) &&
+            (!clientId || c.client_id === clientId)
+          );
+          // Accounts belong to integrations, so filter accounts based on those valid integrations
+          const accounts = data.accounts.filter((a) => a.provider === p.id && integrations.some(i => i.id === a.integration_id || i.id === a.provider));
           return (
             <section className="account-card" key={p.id}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -277,6 +279,7 @@ export default function Integrations({
                   const r = await request('/api/integrations', 'POST', {
                     ...b,
                     provider: currentProvider.id,
+                    targetClientId: clientId,
                     ...(editing?.integrationId ? { integrationId: editing.integrationId } : {}),
                   });
                   await refresh();

@@ -18,8 +18,8 @@ export async function GET() {
   try {
     await authorize();
     const rows = await db()
-      .prepare('SELECT id,label,provider_type,secret,updated FROM integrations ORDER BY provider_type,label,updated')
-      .all<{ id: string; label: string; provider_type: string; secret: string; updated: string }>();
+      .prepare('SELECT id,label,provider_type,client_id,secret,updated FROM integrations ORDER BY provider_type,label,updated')
+      .all<{ id: string; label: string; provider_type: string; client_id: string; secret: string; updated: string }>();
     const configured = await Promise.all(
       rows.results.map(async (r) => {
         const c = await unseal<Credentials>(r.secret);
@@ -27,6 +27,7 @@ export async function GET() {
           id: r.id,
           label: r.label || r.provider_type || r.id,
           provider: r.provider_type || r.id,
+          client_id: r.client_id,
           clientIdHint: '••••' + c.clientId.slice(-4),
           updated: r.updated,
         };
@@ -53,7 +54,6 @@ export async function POST(request: Request) {
     await authorize();
     const b = await body(request);
 
-    // b.integrationId = existing integration to edit, or absent to create new
     const isEdit = !!b.integrationId;
 
     if (!validProvider(b.provider)) throw new AppError('Unknown integration.');
@@ -62,9 +62,9 @@ export async function POST(request: Request) {
 
     const existing = isEdit
       ? await db()
-          .prepare('SELECT secret FROM integrations WHERE id=?')
+          .prepare('SELECT secret, client_id FROM integrations WHERE id=?')
           .bind(integrationId)
-          .first<{ secret: string }>()
+          .first<{ secret: string, client_id: string }>()
       : null;
 
     const old = existing ? await unseal<Credentials>(existing.secret) : null;
@@ -74,17 +74,20 @@ export async function POST(request: Request) {
       throw new AppError('Enter the client ID and client secret.');
 
     const label = b.label ? text(b.label, 100) : '';
+    const tiedClient = b.targetClientId ? text(b.targetClientId, 512) : (existing?.client_id || null);
+    
     const changed = !!old && (old.clientId !== clientId || old.clientSecret !== clientSecret);
 
     const statements = [
       db()
         .prepare(
-          'INSERT INTO integrations(id,label,provider_type,secret,updated) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET label=excluded.label,secret=excluded.secret,updated=excluded.updated',
+          'INSERT INTO integrations(id,label,provider_type,client_id,secret,updated) VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET label=excluded.label,client_id=excluded.client_id,secret=excluded.secret,updated=excluded.updated',
         )
         .bind(
           integrationId,
           label,
           b.provider,
+          tiedClient,
           await seal({ clientId, clientSecret }),
           new Date().toISOString(),
         ),
