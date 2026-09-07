@@ -91,15 +91,36 @@ export async function api(url: string, token: string, init: RequestInit = {}) {
     headers: { Authorization: `Bearer ${token}`, ...init.headers },
     signal: AbortSignal.timeout(25000),
   });
-  if (!r.ok)
+  if (!r.ok) {
+    let detail = '';
+    try { const b = await r.json(); detail = b?.error?.message || b?.error?.status || ''; } catch {}
+    if (r.status === 429)
+      throw new AppError(
+        `Google API quota or rate limit hit (429${detail ? ': ' + detail : ''}). ` +
+        'In Google Cloud Console → APIs & Services → Library, confirm both ' +
+        '"My Business Account Management API" and "My Business Business Information API" are Enabled. ' +
+        'Then check Quotas for remaining quota. Wait 60 seconds and try reconnecting.',
+        429,
+      );
+    if (r.status === 403)
+      throw new AppError(
+        `Access denied (403${detail ? ': ' + detail : ''}). ` +
+        'The connected Google account may not own a Business Profile, or required APIs are not enabled. ' +
+        'Ensure the account manages at least one GBP location and the APIs are enabled in Cloud Console.',
+        403,
+      );
+    if (r.status === 401)
+      throw new AppError('This connection expired or was revoked. Reconnect the account.', 401);
     throw new AppError(
-      `The platform returned ${r.status}. Check app permissions and reconnect the account.`,
+      `The platform returned ${r.status}${detail ? ': ' + detail : ''}. Check app permissions and reconnect the account.`,
       502,
     );
+  }
   if (r.status === 204) return {};
   const raw = await r.text();
   return raw ? JSON.parse(raw) : {};
 }
+
 async function exchange(integrationId: string, provider: ProviderId, params: Record<string, string>) {
   const c = await credentials(integrationId);
   const data = new URLSearchParams({ ...params, client_id: c.clientId });
