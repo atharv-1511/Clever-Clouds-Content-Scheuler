@@ -259,15 +259,15 @@ export default function Scheduler() {
               height={43}
               alt="Clever Clouds"
             />
-            <div className="flex flex-col ml-1">
-              <span className="font-bold text-xl leading-none">
+            <div className="flex flex-col ml-2 justify-center">
+              <span className="font-bold text-[22px] leading-none tracking-tight">
                 Clever Clouds.
               </span>
               <div style={{ marginTop: 2, display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
-                <span style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: 'var(--primary)', fontWeight: 500 }}>
+                <span style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: 'var(--primary)', fontWeight: 500, letterSpacing: '-0.3px' }}>
                   Let's Make it
                 </span>
-                <span style={{ fontFamily: 'Borel, cursive', fontSize: 15, color: '#fbb42c', fontWeight: 'normal', transform: 'translateY(1px)' }}>
+                <span style={{ fontFamily: 'Borel, cursive', fontSize: 18, color: '#fbb42c', fontWeight: 'normal', transform: 'translateY(1px)' }}>
                   Amazing!
                 </span>
               </div>
