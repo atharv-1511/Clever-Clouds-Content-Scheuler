@@ -38,6 +38,7 @@ export default function Clients({
     try {
       const res = await request('/api/clients');
       setClients(res);
+      setViewingClient((prev) => (prev ? res.find((c: ClientData) => c.id === prev.id) || null : null));
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -147,22 +148,22 @@ export default function Clients({
               <div key={client.id} className="account-card cursor-pointer hover:border-[#1043db] transition-colors" onClick={() => setViewingClient(client)}>
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="font-bold text-lg">{client.name}</h3>
-                  <ArrowRight size={16} className="text-gray-400" />
+                  <ArrowRight size={16} className="text-muted-foreground opacity-50" />
                 </div>
                 
                 <div className="space-y-3">
                   <div>
-                    <span className="text-xs font-semibold uppercase text-gray-500 tracking-wider">Connected Accounts</span>
+                    <span className="text-xs font-semibold uppercase muted tracking-wider">Connected Accounts</span>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {clientAccounts.length ? clientAccounts.map(acc => (
-                        <span key={acc.id} className="inline-block bg-[#eef2ff] text-[#1043db] text-xs px-2 py-1 rounded">
+                        <span key={acc.id} className="inline-block bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs px-2 py-1 rounded">
                           {acc.platform}
                         </span>
                       )) : <span className="text-sm muted">None configured</span>}
                     </div>
                   </div>
                   
-                  <div className="text-xs muted pt-3 mt-3 border-t border-gray-100">
+                  <div className="text-xs muted pt-3 mt-3 border-t border-border">
                     Onboarded {displayDate(client.created)}
                   </div>
                 </div>

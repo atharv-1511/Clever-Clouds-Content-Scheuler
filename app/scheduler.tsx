@@ -104,6 +104,11 @@ export default function Scheduler() {
   });
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     localStorage.setItem('cc-theme', theme);
   }, [theme]);
   const refresh = useCallback(async () => {
@@ -799,33 +804,38 @@ export default function Scheduler() {
                   ] || publish?.content}
                 </p>
               </div>
-              <button
-                disabled={!target || busy}
-                className="primary-button"
-                onClick={async () => {
-                  setBusy(true);
-                  setError('');
-                  try {
-                    await request('/api/publish', 'POST', {
-                      postId: publish?.id,
-                      accountId: target,
-                      version: publish?.version,
-                    });
-                    setNotice(
-                      'The platform confirmed your post was published.',
-                    );
-                    await refresh();
-                    setPublish(null);
-                  } catch (e) {
-                    setError((e as Error).message);
-                    await refresh();
-                  } finally {
-                    setBusy(false);
-                  }
-                }}
-              >
-                {busy ? 'Publishing…' : 'Publish now'}
-              </button>
+              {(() => {
+                const hasPublishedToTarget = deliveries.some(d => d.post_id === publish?.id && d.account_id === target && d.status === 'published');
+                return (
+                  <button
+                    disabled={!target || busy || hasPublishedToTarget}
+                    className="primary-button"
+                    onClick={async () => {
+                      setBusy(true);
+                      setError('');
+                      try {
+                        await request('/api/publish', 'POST', {
+                          postId: publish?.id,
+                          accountId: target,
+                          version: publish?.version,
+                        });
+                        setNotice(
+                          'The platform confirmed your post was published.',
+                        );
+                        await refresh();
+                        setPublish(null);
+                      } catch (e) {
+                        setError((e as Error).message);
+                        await refresh();
+                      } finally {
+                        setBusy(false);
+                      }
+                    }}
+                  >
+                    {busy ? 'Publishing…' : hasPublishedToTarget ? 'Already published' : 'Publish now'}
+                  </button>
+                );
+              })()}
           {error && (
             <div className="notice error" role="alert">
               {error}
