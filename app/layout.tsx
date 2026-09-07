@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: 'Clever Clouds | Content Scheduler',
   description:
     'The Clever Clouds workspace for planning, creating, and managing social media content.',
-  icons: { icon: '/icon.png', apple: '/icon.png' },
+  icons: { icon: '/cc-blue.png', apple: '/cc-blue.png' },
 };
 
 export default function RootLayout({

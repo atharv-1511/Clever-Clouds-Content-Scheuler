@@ -19,6 +19,10 @@ import {
   Send,
   LoaderCircle,
   Users,
+  Calendar,
+  ScrollText,
+  Share2,
+  Inbox as InboxIcon,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -60,11 +64,10 @@ import { request, istInput, displayDate } from '@/lib/client';
 import { platforms, type Post } from '@/lib/catalog';
 const nav = [
   ['Clients', Users],
-  ['Calendar', CalendarDays],
-  ['Posts & drafts', FileText],
-  ['Social accounts', Layers],
-  ['Inbox & review', MessageSquare],
-  ['Media library', Layers],
+  ['Calendar', Calendar],
+  ['Posts & drafts', ScrollText],
+  ['Social accounts', Share2],
+  ['Inbox & review', InboxIcon],
 ] as const;
 const statItems = [
   ['Planned', Clock3],
@@ -256,9 +259,14 @@ export default function Scheduler() {
               height={43}
               alt="Clever Clouds"
             />
-            <span style={{ whiteSpace: 'nowrap' }}>
-              clever clouds.
-            </span>
+            <div className="flex flex-col ml-1">
+              <span className="font-bold text-xl leading-none">
+                Clever Clouds.
+              </span>
+              <span style={{ fontFamily: 'Caveat, cursive', fontSize: 15, color: 'var(--muted-text)', fontWeight: 'normal', marginTop: 0 }}>
+                Let's make it amazing.
+              </span>
+            </div>
           </div>
         </SidebarHeader>
         <SidebarContent>
