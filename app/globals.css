@@ -4,33 +4,33 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-primary: #1043db;
+  --color-primary: #f26800; /* Orange */
   --color-primary-foreground: #fff;
-  --color-secondary: #eff3ff;
-  --color-secondary-foreground: #133cbb;
-  --color-muted: #f3f5f9;
-  --color-muted-foreground: #637084;
-  --color-accent: #eaf0ff;
-  --color-accent-foreground: #123ac4;
-  --color-border: #e2e7ef;
-  --color-input: #d6dde8;
-  --color-ring: #1649da;
-  --color-popover: #fff;
-  --color-popover-foreground: #162235;
-  --color-card: #fff;
-  --color-card-foreground: #162235;
+  --color-secondary: #0033cc; /* Cobalt */
+  --color-secondary-foreground: #fff;
+  --color-muted: var(--input-bg);
+  --color-muted-foreground: var(--muted-text);
+  --color-accent: var(--input-bg);
+  --color-accent-foreground: #f26800;
+  --color-border: var(--card-border);
+  --color-input: var(--input-border);
+  --color-ring: #f26800;
+  --color-popover: var(--card-bg);
+  --color-popover-foreground: var(--foreground);
+  --color-card: var(--card-bg);
+  --color-card-foreground: var(--foreground);
   --color-destructive: #bd243c;
-  --color-sidebar: #fff;
-  --color-sidebar-foreground: #52617b;
-  --color-sidebar-accent: #eaf0ff;
-  --color-sidebar-accent-foreground: #1042d5;
-  --color-sidebar-border: #e4e9f2;
-  --color-sidebar-ring: #1649da;
+  --color-sidebar: var(--sidebar-bg);
+  --color-sidebar-foreground: var(--foreground);
+  --color-sidebar-accent: var(--input-bg);
+  --color-sidebar-accent-foreground: #f26800;
+  --color-sidebar-border: var(--card-border);
+  --color-sidebar-ring: #f26800;
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
-  --font-sans: Arial, Helvetica, sans-serif;
+  --font-sans: 'Inter', Arial, Helvetica, sans-serif;
 }
 :root {
   --background: #f7f9fc;
@@ -137,11 +137,14 @@ h3 {
   align-items: center;
   gap: 10px;
   padding: 30px 24px 26px;
-  color: #1043db;
+  color: #0033cc;
   font-size: 21px;
   font-weight: 850;
   letter-spacing: -1px;
   line-height: 1.05;
+}
+[data-theme="dark"] .brand {
+  color: #fff;
 }
 .brand-mark {
   font-size: 34px;
@@ -150,7 +153,7 @@ h3 {
   transform: rotate(-15deg);
 }
 .workspace {
-  border: 1px solid #e1e7ef;
+  border: 1px solid var(--card-border);
   border-radius: 9px;
   margin: 4px 18px 28px;
   padding: 13px 11px;
@@ -159,8 +162,8 @@ h3 {
   align-items: center;
 }
 .avatar {
-  background: #eaf0ff;
-  color: #1246d8;
+  background: var(--input-bg);
+  color: #0033cc;
   font-weight: 800;
   border-radius: 8px;
   width: 34px;
@@ -170,12 +173,17 @@ h3 {
   font-size: 13px;
   flex-shrink: 0;
 }
+[data-theme="dark"] .avatar {
+  background: #0033cc;
+  color: #fff;
+}
 .nav-label {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 1.5px;
-  color: #8a96a9;
+  color: var(--muted-text);
   padding: 0 24px 12px;
+  text-transform: uppercase;
 }
 .nav-button {
   display: flex;
@@ -187,25 +195,26 @@ h3 {
   margin: 3px 14px;
   padding: 13px 14px;
   border-radius: 7px;
-  color: #627086;
+  color: var(--muted-text);
   text-align: left;
   font-size: 14px;
   font-weight: 600;
 }
 .nav-button.active {
-  background: #eaf0ff;
-  color: #1043db;
+  background: var(--input-bg);
+  color: var(--foreground);
 }
 .nav-button:hover {
-  background: #f0f4fb;
+  background: var(--input-bg);
+  opacity: 0.8;
 }
 .side-bottom {
   padding: 20px;
 }
 .side-note {
   padding: 18px;
-  background: #f5f7fd;
-  border: 1px solid #e6ebf5;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
   border-radius: 10px;
   margin-bottom: 24px;
 }
@@ -213,13 +222,13 @@ h3 {
   font-size: 14px;
   line-height: 1.6;
   margin: 8px 0 14px;
-  color: #64748b;
+  color: var(--muted-text);
 }
 .text-button {
   border: 0;
   background: none;
   padding: 0;
-  color: #1043db;
+  color: var(--primary);
   font-weight: 650;
   font-size: 14px;
 }
@@ -229,8 +238,8 @@ h3 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #fff;
-  border-bottom: 1px solid #e4e9f2;
+  background: var(--topbar-bg);
+  border-bottom: 1px solid var(--card-border);
   gap: 14px;
 }
 .topbar-left,
@@ -241,14 +250,14 @@ h3 {
   font-size: 14px;
 }
 .topbar-left {
-  color: #708096;
+  color: var(--muted-text);
 }
 .private-pill {
   padding: 6px 10px;
-  border: 1px solid #e5eaf2;
+  border: 1px solid var(--card-border);
   border-radius: 6px;
   font-size: 12px;
-  color: #64748b;
+  color: var(--muted-text);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -267,20 +276,21 @@ h3 {
   margin-bottom: 26px;
 }
 .eyebrow {
-  color: #1043db;
+  color: var(--primary);
   font-size: 12px;
   font-weight: 750;
   letter-spacing: 1.8px;
   margin-bottom: 8px;
+  text-transform: uppercase;
 }
 .page-heading p {
-  color: #69778d;
+  color: var(--muted-text);
   margin-top: 8px;
   font-size: 14px;
   line-height: 1.6;
 }
 .primary-button {
-  background: #1043db;
+  background: var(--primary);
   color: white;
   padding: 12px 18px;
   display: inline-flex;
@@ -289,17 +299,17 @@ h3 {
   gap: 8px;
   border: 0;
   border-radius: 6px;
+  font-weight: 600;
   font-size: 14px;
-  font-weight: 700;
-  box-shadow: 3px 3px 0 #ffb326;
+  transition: all 0.2s;
   white-space: nowrap;
 }
 .secondary-button {
-  background: white;
-  border: 1px solid #dfe5ee;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: 6px;
   padding: 9px 13px;
-  color: #45536a;
+  color: var(--muted-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -310,8 +320,8 @@ h3 {
 .icon-button {
   width: 34px;
   height: 34px;
-  background: white;
-  border: 1px solid #e1e6ef;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: 6px;
   display: inline-grid;
   place-items: center;
@@ -324,8 +334,8 @@ h3 {
 }
 .stat {
   padding: 19px 20px;
-  border: 1px solid #e2e7ef;
-  background: white;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
   border-radius: 10px;
 }
 .stat-top {
@@ -333,11 +343,11 @@ h3 {
   justify-content: space-between;
   align-items: center;
   font-size: 14px;
-  color: #64748b;
+  color: var(--muted-text);
 }
 .stat-icon {
-  background: #eff3ff;
-  color: #1043db;
+  background: var(--input-bg);
+  color: var(--primary);
   padding: 7px;
   border-radius: 7px;
 }
@@ -357,8 +367,8 @@ h3 {
   margin-top: 4px;
 }
 .calendar-shell {
-  background: white;
-  border: 1px solid #e1e7ef;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: 11px;
   overflow: hidden;
 }
@@ -384,20 +394,20 @@ h3 {
   grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 .weekday {
-  background: #fbfcfe;
-  color: #8a95a8;
+  background: var(--card-bg);
+  color: var(--muted-text);
   text-transform: uppercase;
   font-weight: 700;
   letter-spacing: 1px;
   font-size: 12px;
   padding: 14px 17px;
-  border-bottom: 1px solid #e5eaf2;
-  border-top: 1px solid #e5eaf2;
+  border-bottom: 1px solid var(--card-border);
+  border-top: 1px solid var(--card-border);
 }
 .day {
   min-height: 119px;
-  border-right: 1px solid #ebeff5;
-  border-bottom: 1px solid #ebeff5;
+  border-right: 1px solid var(--card-border);
+  border-bottom: 1px solid var(--card-border);
   padding: 10px;
   position: relative;
 }
@@ -405,11 +415,11 @@ h3 {
   border-right: none;
 }
 .day.outside {
-  background: #fcfdff;
-  color: #b5becb;
+  background: var(--background);
+  color: var(--muted-text);
 }
 .day.today {
-  background: #f8faff;
+  background: var(--input-bg);
 }
 .day-number {
   width: 28px;
@@ -423,7 +433,7 @@ h3 {
   color: inherit;
 }
 .today .day-number {
-  background: #1043db;
+  background: var(--primary);
   color: white;
   font-weight: 700;
 }
@@ -434,7 +444,7 @@ h3 {
   top: 12px;
   border: 0;
   background: transparent;
-  color: #1043db;
+  color: var(--primary);
 }
 .day:hover .day-add,
 .day:focus-within .day-add {
@@ -444,10 +454,10 @@ h3 {
   display: block;
   text-align: left;
   width: 100%;
-  border: 1px solid #dce5fc;
-  border-left: 3px solid #1043db;
-  background: #edf3ff;
-  color: #263d73;
+  border: 1px solid var(--card-border);
+  border-left: 3px solid var(--primary);
+  background: var(--input-bg);
+  color: var(--foreground);
   border-radius: 5px;
   padding: 7px;
   margin-top: 6px;

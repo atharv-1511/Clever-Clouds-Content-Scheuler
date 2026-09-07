@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     const name = text(b.name, 120);
     const address = b.address ? text(b.address, 500, false) : null;
     const phone = b.phone ? text(b.phone, 50) : null;
+    const email = b.email ? text(b.email, 120) : null;
     const social_urls = b.social_urls ? text(b.social_urls, 1000, false) : null;
     
     if (!name) throw new AppError('Client name is required.');
@@ -28,13 +29,13 @@ export async function POST(request: Request) {
 
     if (b.id) {
       await db()
-        .prepare('UPDATE clients SET name=?, address=?, phone=?, social_urls=?, updated=? WHERE id=?')
-        .bind(name, address, phone, social_urls, now, id)
+        .prepare('UPDATE clients SET name=?, address=?, phone=?, email=?, social_urls=?, updated=? WHERE id=?')
+        .bind(name, address, phone, email, social_urls, now, id)
         .run();
     } else {
       await db()
-        .prepare('INSERT INTO clients(id, name, address, phone, social_urls, created, updated) VALUES(?, ?, ?, ?, ?, ?, ?)')
-        .bind(id, name, address, phone, social_urls, now, now)
+        .prepare('INSERT INTO clients(id, name, address, phone, email, social_urls, created, updated) VALUES(?, ?, ?, ?, ?, ?, ?, ?)')
+        .bind(id, name, address, phone, email, social_urls, now, now)
         .run();
     }
 

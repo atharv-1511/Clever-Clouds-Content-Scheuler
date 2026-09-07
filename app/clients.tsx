@@ -7,7 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Users, Plus, ArrowRight, Trash2, Building, Globe, Phone, MapPin } from 'lucide-react';
+import { Users, Plus, ArrowRight, Trash2, Building, Globe, Phone, MapPin, Mail } from 'lucide-react';
+import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube, FaTwitter, FaGlobe } from 'react-icons/fa';
 import Integrations, { type Connections } from './integrations';
 
 export type ClientData = {
@@ -15,6 +16,7 @@ export type ClientData = {
   name: string;
   address: string | null;
   phone: string | null;
+  email: string | null;
   social_urls: string | null;
   created: string;
   updated: string;
@@ -74,6 +76,25 @@ export default function Clients({
 
   if (loading) return <div className="p-8">Loading clients...</div>;
 
+  const renderSocialIcons = (urls: string) => {
+    return urls.split('\n').map((url, i) => {
+      if (!url.trim()) return null;
+      const l = url.toLowerCase();
+      let Icon = FaGlobe;
+      if (l.includes('facebook.com')) Icon = FaFacebook;
+      else if (l.includes('instagram.com')) Icon = FaInstagram;
+      else if (l.includes('linkedin.com')) Icon = FaLinkedin;
+      else if (l.includes('youtube.com')) Icon = FaYoutube;
+      else if (l.includes('twitter.com') || l.includes('x.com')) Icon = FaTwitter;
+      
+      return (
+        <a key={i} href={url.trim()} target="_blank" rel="noreferrer" title={url.trim()} className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
+          <Icon size={14} />
+        </a>
+      );
+    });
+  };
+
   const editModal = (
     <Dialog open={!!editingClient} onOpenChange={(o) => { if (!o) setEditingClient(null); }}>
       <DialogContent className="sm:max-w-md p-6">
@@ -89,6 +110,14 @@ export default function Clients({
               value={editingClient?.name || ''} 
               onChange={e => setEditingClient(prev => prev ? {...prev, name: e.target.value} : null)} 
               placeholder="e.g. Acme Corp"
+            />
+          </label>
+          <label className="field">
+            Email Address
+            <input 
+              value={editingClient?.email || ''} 
+              onChange={e => setEditingClient(prev => prev ? {...prev, email: e.target.value} : null)} 
+              placeholder="e.g. hello@acmecorp.com"
             />
           </label>
           <label className="field">
@@ -138,12 +167,17 @@ export default function Clients({
         
         <div className="topbar" style={{ padding: 0, border: 'none', height: 'auto', marginBottom: 24, background: 'transparent' }}>
           <div>
-            <h1 className="text-3xl font-bold mb-2">{viewingClient.name}</h1>
+            <h1 className="text-3xl font-bold mb-2 uppercase">{viewingClient.name}</h1>
             <div className="flex gap-4 text-sm muted mt-2 flex-wrap">
+              {viewingClient.email && <span className="flex items-center gap-1"><Mail size={14} /> {viewingClient.email}</span>}
               {viewingClient.phone && <span className="flex items-center gap-1"><Phone size={14} /> {viewingClient.phone}</span>}
               {viewingClient.address && <span className="flex items-center gap-1"><MapPin size={14} /> {viewingClient.address}</span>}
-              {viewingClient.social_urls && <span className="flex items-center gap-1"><Globe size={14} /> {viewingClient.social_urls}</span>}
             </div>
+            {viewingClient.social_urls && (
+              <div className="flex gap-2 mt-4">
+                {renderSocialIcons(viewingClient.social_urls)}
+              </div>
+            )}
           </div>
           <div className="flex gap-2">
             <button className="secondary-button" onClick={() => setEditingClient(viewingClient)}>Edit Details</button>
@@ -176,7 +210,7 @@ export default function Clients({
           <h1 className="text-2xl font-bold">Client Dashboard</h1>
           <p className="muted mt-1">Manage your onboarded clients and their connected channels.</p>
         </div>
-        <button className="primary-button" onClick={() => setEditingClient({ name: '', address: '', phone: '', social_urls: '' })}>
+        <button className="primary-button" onClick={() => setEditingClient({ name: '', address: '', phone: '', email: '', social_urls: '' })}>
           <Plus size={16} /> Onboard Client
         </button>
       </div>
@@ -186,7 +220,7 @@ export default function Clients({
           <Building size={32} />
           <h2>Welcome to your Agency Workspace</h2>
           <p>Onboard your first client to start scheduling and managing their content.</p>
-          <button className="primary-button mt-4" onClick={() => setEditingClient({ name: '', address: '', phone: '', social_urls: '' })}>
+          <button className="primary-button mt-4" onClick={() => setEditingClient({ name: '', address: '', phone: '', email: '', social_urls: '' })}>
             Onboard a Client
           </button>
         </div>
