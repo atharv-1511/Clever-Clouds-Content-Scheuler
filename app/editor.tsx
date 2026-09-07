@@ -11,21 +11,28 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { platforms, type Post } from '@/lib/catalog';
 import { istInput, request } from '@/lib/client';
+import type { Connections } from './integrations';
+
 export default function Editor({
   post,
   day,
+  connections,
   close,
   saved,
 }: {
-  post?: Post;
+  post?: Post & { accountIds?: string[] };
   day?: string;
+  connections?: Connections;
   close: () => void;
   saved: () => Promise<void>;
 }) {
   const [title, setTitle] = useState(post?.title || '');
   const [content, setContent] = useState(post?.content || '');
   const [selected, setSelected] = useState<string[]>(
-    post?.platforms || ['Instagram'],
+    post?.platforms || [],
+  );
+  const [selectedAccounts, setSelectedAccounts] = useState<string[]>(
+    post?.accountIds || [],
   );
   const [variants, setVariants] = useState<Record<string, string>>(
     post?.variants || {},
@@ -54,6 +61,7 @@ export default function Editor({
         title,
         content,
         platforms: selected,
+        accountIds: selectedAccounts,
         variants,
         scheduled_at: when ? new Date(when + ':00+05:30').toISOString() : null,
         status,
@@ -75,7 +83,7 @@ export default function Editor({
         if (!o && !busy) close();
       }}
     >
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
             {post ? 'Edit post' : 'Create a post'}
@@ -100,25 +108,71 @@ export default function Editor({
             />
           </label>
           <div className="field">
-            <span>Channels</span>
-            <div className="platform-options">
-              {platforms.map((p) => (
-                <label key={p} className="platform-option">
-                  <Checkbox
-                    checked={selected.includes(p)}
-                    onCheckedChange={(checked) => {
-                      setSelected(
-                        checked
-                          ? [...selected, p]
-                          : selected.filter((s) => s !== p),
-                      );
-                      setTab('All');
-                    }}
-                  />
-                  {p}
-                </label>
-              ))}
-            </div>
+            <span>Destination Accounts</span>
+            {connections?.configured.length ? (
+              <div className="platform-options" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {connections.configured.map((intg) => {
+                  const intgAccounts = connections.accounts.filter(
+                    (a) => a.integration_id === intg.id || a.provider === intg.id,
+                  );
+                  if (!intgAccounts.length) return null;
+                  return (
+                    <div
+                      key={intg.id}
+                      style={{
+                        padding: '10px 14px',
+                        border: '1px solid #e1e7ef',
+                        borderRadius: 8,
+                        background: 'var(--card-bg)',
+                      }}
+                    >
+                      <strong
+                        style={{
+                          display: 'block',
+                          fontSize: 13,
+                          marginBottom: 10,
+                          color: 'var(--text-color)',
+                        }}
+                      >
+                        {intg.label}
+                      </strong>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                        {intgAccounts.map((acc) => (
+                          <label
+                            key={acc.id}
+                            className="platform-option"
+                            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}
+                          >
+                            <Checkbox
+                              checked={selectedAccounts.includes(acc.id)}
+                              onCheckedChange={(checked) => {
+                                const nextAccounts = checked
+                                  ? [...selectedAccounts, acc.id]
+                                  : selectedAccounts.filter((x) => x !== acc.id);
+                                setSelectedAccounts(nextAccounts);
+
+                                // Automatically update `selected` platforms for the UI tabs
+                                const nextPlatforms = new Set(
+                                  nextAccounts.map(
+                                    (id) => connections.accounts.find((a) => a.id === id)?.platform,
+                                  ),
+                                );
+                                setSelected(Array.from(nextPlatforms).filter(Boolean) as string[]);
+                                setTab('All');
+                              }}
+                            />
+                            {acc.name}{' '}
+                            <span style={{ opacity: 0.6, fontSize: 11 }}>({acc.platform})</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="notice">No accounts connected. Go to Social accounts to add one.</div>
+            )}
           </div>
           <Tabs value={tab} onValueChange={(v) => setTab(String(v))}>
             <TabsList className="h-auto flex-wrap">

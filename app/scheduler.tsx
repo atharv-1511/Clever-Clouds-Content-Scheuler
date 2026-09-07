@@ -726,6 +726,7 @@ export default function Scheduler() {
         <Editor
           key={editor.post?.id || editor.day || 'new'}
           {...editor}
+          connections={connections}
           close={() => setEditor(null)}
           saved={async () => {
             await refresh();

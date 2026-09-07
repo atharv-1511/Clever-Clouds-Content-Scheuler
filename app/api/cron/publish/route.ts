@@ -30,8 +30,15 @@ export async function GET(request: Request) {
     // 3. Publish each post
     for (const post of posts.results) {
       let version = post.version;
-      const platforms = JSON.parse(post.platforms);
-      const targetAccounts = allAccounts.filter(a => platforms.includes(a.platform));
+      let targetAccounts: Account[] = [];
+      if (post.account_ids) {
+         const ids = JSON.parse(post.account_ids);
+         targetAccounts = allAccounts.filter(a => ids.includes(a.id));
+      } else {
+         // Fallback for old posts: broadcast to all accounts of the selected platforms
+         const platforms = JSON.parse(post.platforms);
+         targetAccounts = allAccounts.filter(a => platforms.includes(a.platform));
+      }
       
       const postResults = [];
 

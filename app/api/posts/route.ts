@@ -20,6 +20,7 @@ export async function GET() {
         ...p,
         platforms: JSON.parse(p.platforms),
         variants: JSON.parse(p.variants),
+        accountIds: p.account_ids ? JSON.parse(p.account_ids) : [],
       })),
     );
   } catch (e) {
@@ -80,12 +81,17 @@ export async function POST(request: Request) {
         .first())
     )
       throw new AppError('Attachment was not found.');
+    const accountIds = Array.isArray(b.accountIds) ? [...new Set(b.accountIds)].filter(id => typeof id === 'string') : [];
+    if (!accountIds.length && status === 'planned') {
+       throw new AppError('Select at least one account to schedule this post.');
+    }
+
     const id = b.id ? text(b.id, 80) : crypto.randomUUID();
     const now = new Date().toISOString();
     if (b.id) {
       const r = await db()
         .prepare(
-          "UPDATE posts SET title=?,content=?,platforms=?,variants=?,scheduled_at=?,status=?,media_id=?,updated=?,version=version+1 WHERE id=? AND version=? AND status IN ('draft','planned')",
+          "UPDATE posts SET title=?,content=?,platforms=?,variants=?,scheduled_at=?,status=?,media_id=?,account_ids=?,updated=?,version=version+1 WHERE id=? AND version=? AND status IN ('draft','planned')",
         )
         .bind(
           title,
@@ -95,6 +101,7 @@ export async function POST(request: Request) {
           when,
           status,
           b.media_id || null,
+          JSON.stringify(accountIds),
           now,
           id,
           b.version,
@@ -108,7 +115,7 @@ export async function POST(request: Request) {
     } else
       await db()
         .prepare(
-          'INSERT INTO posts(id,title,content,platforms,variants,scheduled_at,status,media_id,created,updated) VALUES(?,?,?,?,?,?,?,?,?,?)',
+          'INSERT INTO posts(id,title,content,platforms,variants,scheduled_at,status,media_id,account_ids,created,updated) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
         )
         .bind(
           id,
@@ -119,6 +126,7 @@ export async function POST(request: Request) {
           when,
           status,
           b.media_id || null,
+          JSON.stringify(accountIds),
           now,
           now,
         )
