@@ -95,6 +95,14 @@ export default function Scheduler() {
   const [publish, setPublish] = useState<Post | null>(null);
   const [target, setTarget] = useState('');
   const [busy, setBusy] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof window === 'undefined') return 'light';
+    return (localStorage.getItem('cc-theme') as 'dark' | 'light') || 'light';
+  });
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('cc-theme', theme);
+  }, [theme]);
   const refresh = useCallback(async () => {
     const [p, c, d] = await Promise.all([
       request('/api/posts'),
@@ -299,9 +307,14 @@ export default function Scheduler() {
             <strong style={{ color: '#253853' }}>{view}</strong>
           </div>
           <div className="topbar-right">
-            <span className="private-pill">
-              <LockKeyhole size={12} /> Private workspace
-            </span>
+            <button
+              className="theme-toggle-btn"
+              aria-label="Toggle dark/light mode"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+            >
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
             <button
               className="icon-button"
               aria-label="Sign out"
@@ -797,7 +810,7 @@ export default function Scheduler() {
                     .filter(
                       (a) =>
                         publish?.platforms.includes(a.platform) &&
-                        ['Facebook', 'LinkedIn', 'X', 'YouTube'].includes(a.platform),
+                        ['Facebook', 'LinkedIn', 'X', 'YouTube', 'Instagram'].includes(a.platform),
                     )
                     .map((a) => (
                       <SelectItem key={a.id} value={a.id}>

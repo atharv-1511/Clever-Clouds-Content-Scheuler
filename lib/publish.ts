@@ -22,7 +22,7 @@ export async function publishPost(postId: string, accountId: string, version: nu
     if (!JSON.parse(p.platforms).includes(a.platform))
       throw new AppError('This account is not a selected post channel.');
 
-    if (!['Facebook', 'LinkedIn', 'X', 'YouTube'].includes(a.platform))
+    if (!['Facebook', 'LinkedIn', 'X', 'YouTube', 'Instagram'].includes(a.platform))
       throw new AppError(
         'Direct publishing for this platform is not available in this version.',
       );
@@ -78,8 +78,47 @@ export async function publishPost(postId: string, accountId: string, version: nu
       );
 
     let external: string = '';
-    
-    if (a.platform === 'YouTube') {
+
+    if (a.platform === 'Instagram') {
+      // Instagram requires image OR video — text-only not supported
+      if (!mediaBlob) throw new AppError('Instagram requires a photo or video attachment.');
+      const isVideo = mediaType.startsWith('video/');
+      
+      // Step 1: Create a media container
+      const containerBody: Record<string, string> = { caption };
+      if (isVideo) {
+        // For video, upload to a public URL — Supabase public URL approach
+        const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/clever-clouds-media/${p.media_id}`;
+        containerBody.media_type = 'REELS';
+        containerBody.video_url = publicUrl;
+      } else {
+        const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/clever-clouds-media/${p.media_id}`;
+        containerBody.image_url = publicUrl;
+      }
+
+      const containerRes = await api(
+        `https://graph.facebook.com/v23.0/${encodeURIComponent(a.external_id)}/media`,
+        token,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(containerBody),
+        }
+      );
+      if (!containerRes.id) throw new AppError('Instagram media container creation failed.');
+
+      // Step 2: Publish the container
+      const publishRes = await api(
+        `https://graph.facebook.com/v23.0/${encodeURIComponent(a.external_id)}/media_publish`,
+        token,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ creation_id: containerRes.id }),
+        }
+      );
+      external = publishRes.id || '';
+    } else if (a.platform === 'YouTube') {
       if (!mediaBlob || !mediaType.startsWith('video/')) {
         throw new AppError('YouTube requires a video attachment.');
       }

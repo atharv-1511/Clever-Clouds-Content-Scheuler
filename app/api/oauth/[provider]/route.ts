@@ -1,6 +1,7 @@
 import { authorize, db, runtime, AppError } from '@/lib/server';
 import { validProvider } from '@/lib/catalog';
 import { discover, exchangeCode } from '@/lib/oauth';
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ provider: string }> },
@@ -14,10 +15,10 @@ export async function GET(
     const state = url.searchParams.get('state');
     const row = await db()
       .prepare(
-        'DELETE FROM oauth_states WHERE id=? AND provider=? AND session=? AND expires>? RETURNING verifier',
+        'DELETE FROM oauth_states WHERE id=? AND provider=? AND session=? AND expires>? RETURNING verifier,integration_id',
       )
       .bind(state || '', provider, s.id, Date.now())
-      .first<{ verifier: string }>();
+      .first<{ verifier: string; integration_id: string }>();
     if (!row)
       throw new AppError(
         'Connection request expired. Start again from Social accounts.',
@@ -27,8 +28,9 @@ export async function GET(
     const code = url.searchParams.get('code');
     if (!code)
       throw new AppError('The platform did not return an authorization code.');
-    const t = await exchangeCode(provider, code, row.verifier);
-    const count = await discover(provider, t);
+    const integrationId = row.integration_id;
+    const t = await exchangeCode(integrationId, provider, code, row.verifier);
+    const count = await discover(integrationId, provider, t);
     target.searchParams.set('connected', String(count));
   } catch (e) {
     target.searchParams.set(

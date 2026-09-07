@@ -9,16 +9,17 @@ export type Tokens = {
 };
 export type Account = {
   id: string;
+  integration_id: string;
   provider: ProviderId;
   platform: string;
   name: string;
   external_id: string;
   token: string;
 };
-export async function credentials(provider: string) {
+export async function credentials(integrationId: string) {
   const row = await db()
     .prepare('SELECT secret FROM integrations WHERE id=?')
-    .bind(provider)
+    .bind(integrationId)
     .first<{ secret: string }>();
   if (!row)
     throw new AppError(
@@ -48,11 +49,12 @@ const endpoints = {
   x: ['https://x.com/i/oauth2/authorize', 'https://api.x.com/2/oauth2/token'],
 };
 export async function authUrl(
+  integrationId: string,
   provider: ProviderId,
   state: string,
   verifier: string,
 ) {
-  const c = await credentials(provider);
+  const c = await credentials(integrationId);
   const url = new URL(endpoints[provider][0]);
   const p = providers.find((p) => p.id === provider)!;
   for (const [k, v] of Object.entries({
@@ -98,8 +100,8 @@ export async function api(url: string, token: string, init: RequestInit = {}) {
   const raw = await r.text();
   return raw ? JSON.parse(raw) : {};
 }
-async function exchange(provider: ProviderId, params: Record<string, string>) {
-  const c = await credentials(provider);
+async function exchange(integrationId: string, provider: ProviderId, params: Record<string, string>) {
+  const c = await credentials(integrationId);
   const data = new URLSearchParams({ ...params, client_id: c.clientId });
   const headers: Record<string, string> = {
     'Content-Type': 'application/x-www-form-urlencoded',
@@ -134,11 +136,12 @@ async function exchange(provider: ProviderId, params: Record<string, string>) {
   } as Tokens;
 }
 export const exchangeCode = (
+  integrationId: string,
   provider: ProviderId,
   code: string,
   verifier: string,
 ) =>
-  exchange(provider, {
+  exchange(integrationId, provider, {
     grant_type: 'authorization_code',
     code,
     redirect_uri: callback(provider),
@@ -152,7 +155,7 @@ export async function access(account: Account) {
         'This connection expired. Reconnect the account.',
         409,
       );
-    const next = await exchange(account.provider, {
+    const next = await exchange(account.integration_id || account.provider, account.provider, {
       grant_type: 'refresh_token',
       refresh_token: t.refresh_token,
     });
@@ -164,7 +167,7 @@ export async function access(account: Account) {
   }
   return t.access_token;
 }
-export async function discover(provider: ProviderId, t: Tokens) {
+export async function discover(integrationId: string, provider: ProviderId, t: Tokens) {
   const found: {
     external: string;
     name: string;
@@ -245,14 +248,17 @@ export async function discover(provider: ProviderId, t: Tokens) {
   const now = new Date().toISOString();
   const statements = [];
   for (const p of found) {
-    const id = `${provider}:${p.platform}:${p.external}`;
+    // Use integrationId in the account ID so multiple integrations can hold
+    // accounts with the same external_id (e.g. two clients sharing a platform)
+    const id = `${integrationId}:${p.platform}:${p.external}`;
     statements.push(
       db()
         .prepare(
-          'INSERT INTO accounts(id,provider,platform,name,external_id,token,updated) VALUES(?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,token=excluded.token,updated=excluded.updated',
+          'INSERT INTO accounts(id,integration_id,provider,platform,name,external_id,token,updated) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,token=excluded.token,updated=excluded.updated',
         )
         .bind(
           id,
+          integrationId,
           provider,
           p.platform,
           p.name,
