@@ -263,11 +263,11 @@ export default function Scheduler() {
               <span className="font-bold text-[22px] leading-none tracking-tight">
                 Clever Clouds.
               </span>
-              <div style={{ marginTop: 2, display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
-                <span style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: 'var(--primary)', fontWeight: 500, letterSpacing: '-0.3px' }}>
+              <div style={{ marginTop: 3, display: 'flex', alignItems: 'baseline', gap: '5px', whiteSpace: 'nowrap' }}>
+                <span style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 12, color: 'var(--primary)', fontWeight: 500, letterSpacing: '-0.3px' }}>
                   Let's Make it
                 </span>
-                <span style={{ fontFamily: 'Borel, cursive', fontSize: 18, color: '#fbb42c', fontWeight: 'normal', transform: 'translateY(1px)' }}>
+                <span style={{ fontFamily: 'Borel, cursive', fontSize: 14, color: '#fbb42c', fontWeight: 'normal' }}>
                   Amazing!
                 </span>
               </div>
