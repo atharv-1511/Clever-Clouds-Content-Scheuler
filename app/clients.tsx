@@ -74,6 +74,57 @@ export default function Clients({
 
   if (loading) return <div className="p-8">Loading clients...</div>;
 
+  const editModal = (
+    <Dialog open={!!editingClient} onOpenChange={(o) => { if (!o) setEditingClient(null); }}>
+      <DialogContent className="sm:max-w-md p-6">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold">
+            {editingClient?.id ? 'Edit Client' : 'Onboard New Client'}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="form-grid mt-4">
+          <label className="field">
+            Client / Brand Name <span className="text-red-500">*</span>
+            <input 
+              value={editingClient?.name || ''} 
+              onChange={e => setEditingClient(prev => prev ? {...prev, name: e.target.value} : null)} 
+              placeholder="e.g. Acme Corp"
+            />
+          </label>
+          <label className="field">
+            Phone Number
+            <input 
+              value={editingClient?.phone || ''} 
+              onChange={e => setEditingClient(prev => prev ? {...prev, phone: e.target.value} : null)} 
+              placeholder="Optional"
+            />
+          </label>
+          <label className="field">
+            Address
+            <textarea 
+              value={editingClient?.address || ''} 
+              onChange={e => setEditingClient(prev => prev ? {...prev, address: e.target.value} : null)} 
+              placeholder="Optional"
+              rows={2}
+            />
+          </label>
+          <label className="field">
+            Social URLs
+            <textarea 
+              value={editingClient?.social_urls || ''} 
+              onChange={e => setEditingClient(prev => prev ? {...prev, social_urls: e.target.value} : null)} 
+              placeholder="https://instagram.com/...&#10;https://facebook.com/..."
+              rows={3}
+            />
+          </label>
+          <button className="primary-button mt-4" disabled={!editingClient?.name} onClick={saveClient}>
+            Save Client
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+
   if (viewingClient) {
     // Client Details Page (with Integrations)
     return (
@@ -110,6 +161,7 @@ export default function Clients({
             clientId={viewingClient.id} 
           />
         </div>
+        {editModal}
       </div>
     );
   }
@@ -173,55 +225,7 @@ export default function Clients({
         </div>
       )}
 
-      {/* Onboarding Modal */}
-      <Dialog open={!!editingClient} onOpenChange={(o) => { if (!o) setEditingClient(null); }}>
-        <DialogContent className="sm:max-w-md p-6">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">
-              {editingClient?.id ? 'Edit Client' : 'Onboard New Client'}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="form-grid mt-4">
-            <label className="field">
-              Client / Brand Name <span className="text-red-500">*</span>
-              <input 
-                value={editingClient?.name || ''} 
-                onChange={e => setEditingClient(prev => prev ? {...prev, name: e.target.value} : null)} 
-                placeholder="e.g. Acme Corp"
-              />
-            </label>
-            <label className="field">
-              Phone Number
-              <input 
-                value={editingClient?.phone || ''} 
-                onChange={e => setEditingClient(prev => prev ? {...prev, phone: e.target.value} : null)} 
-                placeholder="Optional"
-              />
-            </label>
-            <label className="field">
-              Address
-              <textarea 
-                value={editingClient?.address || ''} 
-                onChange={e => setEditingClient(prev => prev ? {...prev, address: e.target.value} : null)} 
-                placeholder="Optional"
-                rows={2}
-              />
-            </label>
-            <label className="field">
-              Social URLs
-              <textarea 
-                value={editingClient?.social_urls || ''} 
-                onChange={e => setEditingClient(prev => prev ? {...prev, social_urls: e.target.value} : null)} 
-                placeholder="https://instagram.com/...&#10;https://facebook.com/..."
-                rows={3}
-              />
-            </label>
-            <button className="primary-button mt-4" disabled={!editingClient?.name} onClick={saveClient}>
-              Save Client
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {editModal}
     </div>
   );
 }
