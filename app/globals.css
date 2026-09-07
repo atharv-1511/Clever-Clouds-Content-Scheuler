@@ -138,12 +138,14 @@ h3 {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 30px 24px 26px;
+  padding: 22px 20px 20px;
   color: #0033cc;
   font-size: 21px;
   font-weight: 850;
   letter-spacing: -1px;
   line-height: 1.05;
+  overflow: visible;
+  white-space: nowrap;
 }
 [data-theme="dark"] .brand {
   color: #fff;
