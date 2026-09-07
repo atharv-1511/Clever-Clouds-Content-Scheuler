@@ -260,7 +260,7 @@ export default function Scheduler() {
               alt="Clever Clouds"
             />
             <div className="flex flex-col ml-2 justify-center">
-              <span className="font-bold text-[22px] leading-none tracking-tight">
+              <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px', color: 'var(--foreground)', lineHeight: 1 }}>
                 Clever Clouds.
               </span>
               <div style={{ marginTop: 3, display: 'flex', alignItems: 'baseline', gap: '5px', whiteSpace: 'nowrap' }}>
