@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     await db().batch([
       db()
         .prepare('INSERT INTO sessions(id,expires) VALUES(?,?)')
-        .bind(await digest(token), now + 43200000),
+        .bind(await digest(token), now + 604800000),
       db()
         .prepare('DELETE FROM attempts WHERE id=? OR expires<?')
         .bind(ip, now),
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     const r = json({ authenticated: true, email: EMAIL });
     r.headers.set(
       'Set-Cookie',
-      `cc_session=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=43200${new URL(request.url).protocol === 'https:' ? '; Secure' : ''}`,
+      `cc_session=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=604800${new URL(request.url).protocol === 'https:' ? '; Secure' : ''}`,
     );
     return r;
   } catch (e) {
