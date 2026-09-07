@@ -45,6 +45,7 @@
   --notice-bg: #fff9e9;
   --notice-border: #f1d994;
   --notice-text: #805e12;
+  --primary: #0033cc;
 }
 [data-theme="dark"] {
   --background: #0f1117;
@@ -59,6 +60,7 @@
   --notice-bg: #2a2510;
   --notice-border: #4a3c00;
   --notice-text: #f0c040;
+  --primary: #3b82f6;
 }
 * {
   box-sizing: border-box;
