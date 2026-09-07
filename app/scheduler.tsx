@@ -263,9 +263,14 @@ export default function Scheduler() {
               <span className="font-bold text-xl leading-none">
                 Clever Clouds.
               </span>
-              <span style={{ fontFamily: 'Caveat, cursive', fontSize: 15, color: 'var(--muted-text)', fontWeight: 'normal', marginTop: 0 }}>
-                Let's make it amazing.
-              </span>
+              <div style={{ marginTop: 2, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: 'var(--primary)', fontWeight: 500 }}>
+                  Let's Make it
+                </span>
+                <span style={{ fontFamily: 'Borel, cursive', fontSize: 15, color: '#fbb42c', fontWeight: 'normal', transform: 'translateY(1px)' }}>
+                  Amazing!
+                </span>
+              </div>
             </div>
           </div>
         </SidebarHeader>

@@ -88,7 +88,7 @@ export default function Clients({
       else if (l.includes('twitter.com') || l.includes('x.com')) Icon = FaTwitter;
       
       return (
-        <a key={i} href={url.trim()} target="_blank" rel="noreferrer" title={url.trim()} className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
+        <a key={i} href={url.trim()} target="_blank" rel="noreferrer" title={url.trim()} className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-100 dark:bg-yellow-900/40 text-yellow-500 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-900/60 transition-colors border border-yellow-200 dark:border-yellow-700/50">
           <Icon size={14} />
         </a>
       );
@@ -97,7 +97,7 @@ export default function Clients({
 
   const editModal = (
     <Dialog open={!!editingClient} onOpenChange={(o) => { if (!o) setEditingClient(null); }}>
-      <DialogContent className="sm:max-w-md p-6">
+      <DialogContent className="sm:max-w-md p-6 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             {editingClient?.id ? 'Edit Client' : 'Onboard New Client'}
