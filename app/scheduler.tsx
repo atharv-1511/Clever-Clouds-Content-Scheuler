@@ -18,6 +18,7 @@ import {
   Trash2,
   Send,
   LoaderCircle,
+  Users,
 } from 'lucide-react';
 import {
   Sidebar,
